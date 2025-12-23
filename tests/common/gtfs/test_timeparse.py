@@ -13,7 +13,7 @@ def test_above_24():
 
 @pytest.mark.parametrize(
     "value",
-    ["aa", "10:70:00", "10:00:70", "", None]
+    ["1:2:3", "aa", "10:70:00", "10:00:70", "", None]
 )
 def test_invalid_times(value):
     with pytest.raises(ValueError):
