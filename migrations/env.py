@@ -7,7 +7,7 @@ from alembic import context
 
 
 from app.common.app_common.db.base import Base
-from app.common.app_common.db import models
+from app.common.app_common.db import models  # noqa: F401
 from app.common.app_common.config import build_database_url
 
 
