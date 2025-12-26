@@ -23,7 +23,7 @@ def upgrade() -> None:
     op.create_table('gtfs_meta',
     sa.Column('id', sa.SmallInteger(), nullable=False),
     sa.Column('current_hash', sa.Text(), nullable=False),
-    sa.Column('updated_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
+    sa.Column('updated_at', sa.TIMESTAMP(timezone=True), server_default=sa.text('now()'), nullable=False),
     sa.PrimaryKeyConstraint('id')
     )
 
@@ -33,17 +33,17 @@ def upgrade() -> None:
     sa.Column('stop_name', sa.Text(), nullable=False),
     sa.Column('stop_sequence', sa.Integer(), nullable=False),
     sa.Column('direction_id', sa.SmallInteger(), nullable=True),
-    sa.Column('planned_time', sa.DateTime(), nullable=False),
-    sa.Column('event_time', sa.DateTime(), nullable=False),
+    sa.Column('planned_time', sa.TIMESTAMP(timezone=True), nullable=False),
+    sa.Column('event_time', sa.TIMESTAMP(timezone=True), nullable=False),
     sa.Column('delay_seconds', sa.Integer(), nullable=False),
     sa.Column('vehicle_label', sa.Text(), nullable=True),
-    sa.Column('is_estimated', sa.Boolean(), server_default='false', nullable=False),
+    sa.Column('is_estimated', sa.Boolean(), server_default=sa.text('false'), nullable=False),
     sa.Column('headsign', sa.Text(), nullable=True),
     sa.Column('service_date', sa.Date(), nullable=False),
     sa.Column('trip_id', sa.Text(), nullable=False),
     sa.Column('stop_id', sa.Text(), nullable=False),
     sa.Column('static_hash', sa.Text(), nullable=False),
-    sa.Column('created_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
+    sa.Column('created_at', sa.TIMESTAMP(timezone=True), server_default=sa.text('now()'), nullable=False),
     sa.PrimaryKeyConstraint('id')
     )
 
