@@ -6,7 +6,7 @@ services:
       POSTGRES_USER: mpk
       POSTGRES_PASSWORD_FILE: /run/secrets/db_password
     ports:
-      - "5432:5432"
+      - "127.0.0.1:5432:5432"
     volumes:
       - gtfs_pg:/var/lib/postgresql/data
     secrets:
