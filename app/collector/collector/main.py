@@ -8,8 +8,8 @@ from app.collector.collector.parse import parse_vehicle_positions
 from app.collector.collector.settings import POLL_SECONDS, TZ
 from app.collector.collector.static_lookup import StaticStop, fetch_static_for_vp
 from app.collector.collector.writer import insert_stop_events
+from app.common.app_common.db.meta import get_current_static_hash
 from app.common.app_common.db.session import engine
-from app.importer.importer.meta import get_current_static_hash
 
 
 def _now_str(tz: ZoneInfo) -> str:

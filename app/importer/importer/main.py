@@ -1,14 +1,13 @@
 import shutil
 from pathlib import Path
 
-from app.common.app_common.gtfs.hashing import sha256_file
+from app.common.app_common.db.meta import get_current_static_hash, set_current_static_hash
 from app.common.app_common.db.session import engine
-from app.importer.importer.download import download_gtfs_zip
+from app.common.app_common.gtfs.hashing import sha256_file
 from app.importer.importer.archive import archive_zip_by_hash
+from app.importer.importer.download import download_gtfs_zip
 from app.importer.importer.extract import extract_gtfs_zip
 from app.importer.importer.load import load_static_gtfs
-from app.importer.importer.meta import get_current_static_hash, set_current_static_hash
-
 
 
 URL = "https://gtfs.ztp.krakow.pl/GTFS_KRK_A.zip"
