@@ -116,7 +116,7 @@ def parse_trip_updates(pb_data: bytes, agency: Agency) -> list[TripUpdate]:
             stop_time_updates.append(
                 StopTimeUpdate(
                     stop_id=stop_id,
-                    stop_sequence=None, # we'll get that from current_stop_times.txt
+                    stop_sequence=None,  # we'll get that from current_stop_times.txt
                     arrival_time=arrival_time,
                     departure_time=departure_time
                 )
