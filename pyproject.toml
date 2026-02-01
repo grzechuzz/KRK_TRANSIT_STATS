@@ -23,7 +23,8 @@ dev = [
     "pytest-cov>=6.0",
     "ruff>=0.13",
     "mypy>=1.18",
-    "pre-commit>=4.0"
+    "pre-commit>=4.0",
+    "types-requests>=2.32"
 
 ]
 
@@ -49,6 +50,7 @@ select = ["E", "F", "I", "UP", "N", "W"]
 python_version = "3.13"
 strict = true
 ignore_missing_imports = true
+explicit_package_bases = true
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -57,3 +59,7 @@ addopts = "-v"
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["app*"]
+
+[[tool.mypy.overrides]]
+module = "tests.*"
+disallow_untyped_defs = false
