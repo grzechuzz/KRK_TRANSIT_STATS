@@ -4,11 +4,13 @@ from app.common.gtfs.hashing import sha256_file
 
 
 class TestSha256File:
-
-    @pytest.mark.parametrize("content, expected_hash", [
-        (b"", "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"),
-        (b"elo elo 320 ", "01b10497dbbe4dc2c7990b189a98f4fba640ae4a82fcd515b305d5ec0dd88588"),
-    ])
+    @pytest.mark.parametrize(
+        "content, expected_hash",
+        [
+            (b"", "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"),
+            (b"elo elo 320 ", "01b10497dbbe4dc2c7990b189a98f4fba640ae4a82fcd515b305d5ec0dd88588"),
+        ],
+    )
     def test_known_hashes(self, tmp_path, content, expected_hash):
         p = tmp_path / "test_file.txt"
         p.write_bytes(content)
