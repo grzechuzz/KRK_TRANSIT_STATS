@@ -50,6 +50,7 @@ select = ["E", "F", "I", "UP", "N", "W"]
 python_version = "3.13"
 strict = true
 ignore_missing_imports = true
+explicit_package_bases = true
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
