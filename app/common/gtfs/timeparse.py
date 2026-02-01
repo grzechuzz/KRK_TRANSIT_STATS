@@ -49,9 +49,7 @@ def compute_service_date(event_time: datetime, scheduled_seconds: int) -> date:
 
 
 def compute_planned_time(
-        service_date: date,
-        scheduled_seconds: int,
-        tz: ZoneInfo = ZoneInfo("Europe/Warsaw")
+    service_date: date, scheduled_seconds: int, tz: ZoneInfo = ZoneInfo("Europe/Warsaw")
 ) -> datetime:
     """
     Converts GTFS time (seconds since service start) to actual datetime.
@@ -61,12 +59,7 @@ def compute_planned_time(
     day_offset = scheduled_seconds // 86400
     seconds_in_day = scheduled_seconds % 86400
 
-    base_dt = datetime(
-        service_date.year,
-        service_date.month,
-        service_date.day,
-        tzinfo=tz
-    )
+    base_dt = datetime(service_date.year, service_date.month, service_date.day, tzinfo=tz)
 
     return base_dt + timedelta(days=day_offset, seconds=seconds_in_day)
 

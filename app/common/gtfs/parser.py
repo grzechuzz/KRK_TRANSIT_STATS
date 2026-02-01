@@ -72,7 +72,7 @@ def parse_vehicle_positions(pb_data: bytes, agency: Agency) -> list[VehiclePosit
 
 def parse_trip_updates(pb_data: bytes, agency: Agency) -> list[TripUpdate]:
     """
-        Parse trip updates from TripUpdates.pb feed.
+    Parse trip updates from TripUpdates.pb feed.
     """
     feed = gtfs_realtime_pb2.FeedMessage()
     feed.ParseFromString(pb_data)
@@ -119,7 +119,7 @@ def parse_trip_updates(pb_data: bytes, agency: Agency) -> list[TripUpdate]:
                     stop_id=stop_id,
                     stop_sequence=None,  # we'll get that from current_stop_times.txt
                     arrival_time=arrival_time,
-                    departure_time=departure_time
+                    departure_time=departure_time,
                 )
             )
 
@@ -130,7 +130,7 @@ def parse_trip_updates(pb_data: bytes, agency: Agency) -> list[TripUpdate]:
                     trip_id=tu.trip.trip_id,
                     vehicle_id=vehicle_id,
                     timestamp=timestamp,
-                    stop_time_updates=stop_time_updates
+                    stop_time_updates=stop_time_updates,
                 )
             )
 

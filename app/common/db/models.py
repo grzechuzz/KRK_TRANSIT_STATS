@@ -26,11 +26,7 @@ class GtfsMeta(Base):
 
     agency: Mapped[str] = mapped_column(Text, primary_key=True)
     current_hash: Mapped[str] = mapped_column(Text, nullable=False)
-    updated_at: Mapped[datetime] = mapped_column(
-        TIMESTAMP(timezone=True),
-        server_default=text("now()"),
-        nullable=False
-    )
+    updated_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), server_default=text("now()"), nullable=False)
 
 
 class CurrentRoute(Base):
@@ -78,34 +74,22 @@ class CurrentTrip(Base):
 class CurrentStopTime(Base):
     __tablename__ = "current_stop_times"
 
-    trip_id: Mapped[str] = mapped_column(
-        Text,
-        ForeignKey("current_trips.trip_id"),
-        primary_key=True
-    )
+    trip_id: Mapped[str] = mapped_column(Text, ForeignKey("current_trips.trip_id"), primary_key=True)
     stop_sequence: Mapped[int] = mapped_column(Integer, primary_key=True)
-    stop_id: Mapped[str] = mapped_column(
-        Text,
-        ForeignKey("current_stops.stop_id"),
-        nullable=False
-    )
+    stop_id: Mapped[str] = mapped_column(Text, ForeignKey("current_stops.stop_id"), nullable=False)
     arrival_seconds: Mapped[int] = mapped_column(Integer, nullable=False)
     departure_seconds: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
     trip: Mapped["CurrentTrip"] = relationship(back_populates="stop_times")
     stop: Mapped["CurrentStop"] = relationship(back_populates="stop_times")
 
-    __table_args__ = (Index("idx_current_stop_times_stop", "stop_id"))
+    __table_args__ = Index("idx_current_stop_times_stop", "stop_id")
 
 
 class CurrentShape(Base):
     __tablename__ = "current_shapes"
 
-    id: Mapped[int] = mapped_column(
-        BigInteger,
-        Identity(always=True),
-        primary_key=True
-    )
+    id: Mapped[int] = mapped_column(BigInteger, Identity(always=True), primary_key=True)
     agency_id: Mapped[str] = mapped_column(Text, nullable=False)
     shape_id: Mapped[str] = mapped_column(Text, nullable=False)
     shape_pt_lat: Mapped[float] = mapped_column(Double, nullable=False)
@@ -116,11 +100,7 @@ class CurrentShape(Base):
 class StopEventModel(Base):
     __tablename__ = "stop_events"
 
-    id: Mapped[int] = mapped_column(
-        BigInteger,
-        Identity(always=True),
-        primary_key=True
-    )
+    id: Mapped[int] = mapped_column(BigInteger, Identity(always=True), primary_key=True)
     service_date: Mapped[date] = mapped_column(Date, primary_key=True)
 
     agency: Mapped[str] = mapped_column(Text, nullable=False)
@@ -140,8 +120,4 @@ class StopEventModel(Base):
     detection_method: Mapped[int] = mapped_column(SmallInteger, nullable=False)
     is_estimated: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default=text("false"))
     static_hash: Mapped[str] = mapped_column(Text, nullable=False)
-    created_at: Mapped[datetime] = mapped_column(
-        TIMESTAMP(timezone=True),
-        nullable=False,
-        server_default=text("now()")
-    )
+    created_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), nullable=False, server_default=text("now()"))

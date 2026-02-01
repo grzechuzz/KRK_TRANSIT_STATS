@@ -28,9 +28,7 @@ def load_static_gtfs(conn: Connection, base_dir: str | Path) -> None:
     tmp_files = [routes_min, stops_min, trips_min, stop_times_min]
 
     try:
-        conn.execute(
-            text("TRUNCATE current_stop_times, current_trips, current_stops, current_routes")
-        )
+        conn.execute(text("TRUNCATE current_stop_times, current_trips, current_stops, current_routes"))
 
         _copy(conn, "current_routes", routes_min, ["route_id", "route_short_name"])
         _copy(
@@ -69,9 +67,7 @@ def _require_columns(reader: csv.DictReader, required: set[str], filename: str) 
     have = set(reader.fieldnames)
     missing = required - have
     if missing:
-        raise LoadError(
-            f"{filename} missing columns: {sorted(missing)} (have: {reader.fieldnames})"
-        )
+        raise LoadError(f"{filename} missing columns: {sorted(missing)} (have: {reader.fieldnames})")
 
 
 def _build_routes_min_csv(routes_txt: Path) -> Path:
@@ -109,9 +105,7 @@ def _build_stops_min_csv(stops_txt: Path) -> Path:
             )
 
             writer = csv.writer(f_out)
-            writer.writerow(
-                ["stop_id", "stop_name", "stop_code", "stop_desc", "stop_lat", "stop_lon"]
-            )
+            writer.writerow(["stop_id", "stop_name", "stop_code", "stop_desc", "stop_lat", "stop_lon"])
 
             for row in reader:
                 stop_id = (row.get("stop_id") or "").strip()
@@ -146,9 +140,7 @@ def _build_trips_min_csv(trips_txt: Path) -> Path:
     try:
         with open(trips_txt, encoding="utf-8", newline="") as f_in, tmp as f_out:
             reader = csv.DictReader(f_in)
-            _require_columns(
-                reader, {"trip_id", "route_id", "direction_id", "trip_headsign"}, "trips.txt"
-            )
+            _require_columns(reader, {"trip_id", "route_id", "direction_id", "trip_headsign"}, "trips.txt")
 
             writer = csv.writer(f_out)
             writer.writerow(["trip_id", "route_id", "direction_id", "headsign"])
@@ -189,9 +181,7 @@ def _build_stop_times_min_csv(stop_times_txt: Path) -> Path:
             )
 
             writer = csv.writer(f_out)
-            writer.writerow(
-                ["trip_id", "stop_sequence", "stop_id", "arrival_seconds", "departure_seconds"]
-            )
+            writer.writerow(["trip_id", "stop_sequence", "stop_id", "arrival_seconds", "departure_seconds"])
 
             for row in reader:
                 trip_id = (row.get("trip_id") or "").strip()
@@ -203,10 +193,7 @@ def _build_stop_times_min_csv(stop_times_txt: Path) -> Path:
                     continue
 
                 if arrival_time is None or arrival_time.strip() == "":
-                    raise LoadError(
-                        f"stop_times has empty arrival_time for trip_id={trip_id}, "
-                        f"seq={stop_sequence}"
-                    )
+                    raise LoadError(f"stop_times has empty arrival_time for trip_id={trip_id}, seq={stop_sequence}")
 
                 arrival_seconds = parse_gtfs_time_to_seconds(arrival_time)
 
