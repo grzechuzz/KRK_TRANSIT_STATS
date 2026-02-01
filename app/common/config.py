@@ -47,6 +47,8 @@ class AppConfig:
 def get_config() -> AppConfig:
     """Load configuration from environment variables. Cached after first call."""
     db_password = _read_secret_file("DB_PASSWORD_FILE") or os.getenv("DB_PASSWORD")
+    if not db_password:
+        raise ValueError("DB_PASSWORD must be set")
 
     return AppConfig(
         database=DatabaseConfig(
