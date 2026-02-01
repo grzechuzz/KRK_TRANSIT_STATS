@@ -23,7 +23,8 @@ dev = [
     "pytest-cov>=6.0",
     "ruff>=0.13",
     "mypy>=1.18",
-    "pre-commit>=4.0"
+    "pre-commit>=4.0",
+    "types-requests>=2.32"
 
 ]
 
@@ -57,3 +58,7 @@ addopts = "-v"
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["app*"]
+
+[[tool.mypy.overrides]]
+module = "tests.*"
+disallow_untyped_defs = false
