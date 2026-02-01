@@ -1,4 +1,5 @@
 from datetime import datetime
+
 from sqlalchemy.orm import Session
 
 from app.common.db.models import GtfsMeta
