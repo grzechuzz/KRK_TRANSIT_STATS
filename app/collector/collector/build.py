@@ -68,9 +68,7 @@ def build_stop_events(
         event_time = datetime.fromtimestamp(int(it.rt_timestamp), tz=ZoneInfo("UTC")).astimezone(tz)
 
         sched_seconds = (
-            int(st_st.departure_seconds)
-            if st_st.departure_seconds is not None
-            else int(st_st.arrival_seconds)
+            int(st_st.departure_seconds) if st_st.departure_seconds is not None else int(st_st.arrival_seconds)
         )
 
         service_date = event_time.date()

@@ -26,9 +26,9 @@ def compute_planned_times(
     day_offset = arrival_seconds // 86400
     sec_in_day = arrival_seconds % 86400
 
-    planned_dt = datetime(
-        service_date.year, service_date.month, service_date.day, tzinfo=tz
-    ) + timedelta(days=day_offset, seconds=sec_in_day)
+    planned_dt = datetime(service_date.year, service_date.month, service_date.day, tzinfo=tz) + timedelta(
+        days=day_offset, seconds=sec_in_day
+    )
 
     return PlannedTimes(
         service_date=service_date,

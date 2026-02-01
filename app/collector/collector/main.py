@@ -37,9 +37,7 @@ def run_once() -> tuple[int, int]:
     feed_ts, items = parse_vehicle_positions(pb)
 
     trip_ids = [x.trip_id for x in items]
-    trip_seq_pairs = [
-        (x.trip_id, int(x.stop_sequence)) for x in items if x.stop_sequence is not None
-    ]
+    trip_seq_pairs = [(x.trip_id, int(x.stop_sequence)) for x in items if x.stop_sequence is not None]
 
     with engine.begin() as conn:
         static_hash = get_current_static_hash(conn)
@@ -77,9 +75,7 @@ def main() -> None:
         try:
             built_cnt, inserted_cnt = run_once()
             dt = time.time() - t0
-            print(
-                f"[collector] {_now_str(TZ)} built={built_cnt} inserted={inserted_cnt} dt={dt:.2f}s"
-            )
+            print(f"[collector] {_now_str(TZ)} built={built_cnt} inserted={inserted_cnt} dt={dt:.2f}s")
         except Exception as e:
             dt = time.time() - t0
             print(f"[collector] {_now_str(TZ)} ERROR after {dt:.2f}s: {e!r}")
