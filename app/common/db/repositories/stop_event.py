@@ -2,13 +2,14 @@ from datetime import date
 
 from sqlalchemy import select
 from sqlalchemy.dialects.postgresql import insert
+from sqlalchemy.orm import Session
 
 from app.common.db.models import StopEventModel
 from app.common.models.events import StopEvent
 
 
 class StopEventRepository:
-    def __init__(self, session) -> None:
+    def __init__(self, session: Session) -> None:
         self._session = session
 
     def insert_batch(self, events: list[StopEvent]) -> int:
