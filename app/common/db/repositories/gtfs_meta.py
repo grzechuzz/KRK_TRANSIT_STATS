@@ -21,8 +21,5 @@ class GtfsMetaRepository:
             meta.current_hash = hash_value
             meta.updated_at = datetime.now()
         else:
-            meta = GtfsMeta(
-                agency=agency.value,
-                current_hash=hash_value
-            )
+            meta = GtfsMeta(agency=agency.value, current_hash=hash_value)
             self._session.add(meta)

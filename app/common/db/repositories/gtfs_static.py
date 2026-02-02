@@ -32,9 +32,7 @@ class GtfsStaticRepository:
         return {stop.stop_id: stop for stop in stops}
 
     def get_stop_times_for_trip(self, trip_id: str) -> list[CurrentStopTime]:
-        stmt = (select(CurrentStopTime)
-                .where(CurrentStopTime.trip_id == trip_id)
-                .order_by(CurrentStopTime.stop_sequence))
+        stmt = select(CurrentStopTime).where(CurrentStopTime.trip_id == trip_id).order_by(CurrentStopTime.stop_sequence)
 
         return list(self._session.scalars(stmt).all())
 
@@ -42,9 +40,11 @@ class GtfsStaticRepository:
         if not trip_ids:
             return {}
 
-        stmt = (select(CurrentStopTime)
-                .where(CurrentStopTime.trip_id.in_(trip_ids))
-                .order_by(CurrentStopTime.trip_id, CurrentStopTime.stop_sequence))
+        stmt = (
+            select(CurrentStopTime)
+            .where(CurrentStopTime.trip_id.in_(trip_ids))
+            .order_by(CurrentStopTime.trip_id, CurrentStopTime.stop_sequence)
+        )
 
         stop_times = self._session.scalars(stmt).all()
         result: dict[str, list[CurrentStopTime]] = {}
@@ -61,8 +61,9 @@ class GtfsStaticRepository:
         return self._session.scalars(stmt).first()
 
     def get_stop_sequence_by_stop_id(self, trip_id: str, stop_id: str) -> int | None:
-        stmt = (select(CurrentStopTime.stop_sequence)
-                .where(CurrentStopTime.trip_id == trip_id, CurrentStopTime.stop_id == stop_id))
+        stmt = select(CurrentStopTime.stop_sequence).where(
+            CurrentStopTime.trip_id == trip_id, CurrentStopTime.stop_id == stop_id
+        )
         return self._session.scalar(stmt)
 
     def build_stop_id_to_sequence_map(self, trip_id: str) -> dict[str, int]:
