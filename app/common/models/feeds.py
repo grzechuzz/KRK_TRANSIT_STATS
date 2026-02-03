@@ -28,7 +28,7 @@ FEED_CONFIGS: dict[Agency, FeedConfig] = {
         static_filename="GTFS_KRK_M.zip",
         vehicle_positions_url="https://gtfs.ztp.krakow.pl/VehiclePositions_M.pb",
         trip_updates_url="https://gtfs.ztp.krakow.pl/TripUpdates_M.pb",
-    )
+    ),
 }
 
 
