@@ -1,18 +1,17 @@
 services:
   gtfs_db:
     image: postgres:17
+    restart: always
     environment:
-      POSTGRES_DB: mpk_db
-      POSTGRES_USER: mpk
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD_FILE: /run/secrets/db_password
-    ports:
-      - "127.0.0.1:5432:5432"
     volumes:
       - gtfs_pg:/var/lib/postgresql/data
     secrets:
       - db_password
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U mpk -d mpk_db"]
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
       interval: 5s
       timeout: 3s
       retries: 30
@@ -20,10 +19,25 @@ services:
   redis:
     image: redis:7-alpine
     command: redis-server --aclfile /usr/local/etc/redis/users.acl
-    ports:
-      - "127.0.0.1:6379:6379"
     volumes:
       - ../redis/users.acl:/usr/local/etc/redis/users.acl:ro
+
+  gtfs_importer:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.importer
+    restart: unless-stopped
+    depends_on:
+      gtfs_db:
+        condition: service_healthy
+    secrets:
+      - db_password
+    environment:
+      DATABASE_PASSWORD_FILE: /run/secrets/db_password
+      DATABASE_HOST: gtfs_db
+      DATABASE_PORT: 5432
+      DATABASE_NAME: ${POSTGRES_DB}
+      DATABASE_USER: ${POSTGRES_USER}
 
 secrets:
   db_password:
