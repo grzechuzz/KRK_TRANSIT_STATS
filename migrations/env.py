@@ -6,12 +6,12 @@ from sqlalchemy import pool
 from alembic import context
 
 
-from app.common.app_common.db.base import Base
-from app.common.app_common.db import models  # noqa: F401
-from app.common.app_common.config import build_database_url
+from app.common.db.models import Base
+from app.common.db import models  # noqa: F401
+from app.common.config import get_config
 
 
-url = build_database_url()
+url = get_config().database.url
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
