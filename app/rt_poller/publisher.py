@@ -2,6 +2,7 @@ import json
 import logging
 
 import redis
+
 from app.common.db.connection import get_session
 from app.common.db.repositories.gtfs_static import GtfsStaticRepository
 from app.common.feeds import FeedConfig
