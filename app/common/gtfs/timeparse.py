@@ -40,7 +40,8 @@ def compute_service_date(event_time: datetime, scheduled_seconds: int) -> date:
 
     For overnight trips (scheduled_seconds >= 86400) date is the previous calendar day
     """
-    service_date = event_time.date()
+    local_time = event_time.astimezone(ZoneInfo("Europe/Warsaw"))
+    service_date = local_time.date()
 
     if scheduled_seconds >= 86400:
         service_date = service_date - timedelta(days=1)
