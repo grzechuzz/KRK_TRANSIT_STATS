@@ -46,15 +46,3 @@ class StopEventRepository:
 
         result = self._session.execute(stmt)
         return result.rowcount or 0  # type: ignore[attr-defined]
-
-    def exists(self, trip_id: str, service_date: date, stop_sequence: int) -> bool:
-        stmt = (
-            select(StopEventModel.id)
-            .where(
-                StopEventModel.trip_id == trip_id,
-                StopEventModel.service_date == service_date,
-                StopEventModel.stop_sequence == stop_sequence,
-            )
-            .exists()
-        )
-        return self._session.scalar(select(stmt)) or False
