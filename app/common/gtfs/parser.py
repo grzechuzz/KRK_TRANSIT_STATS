@@ -1,3 +1,4 @@
+import logging
 from datetime import UTC, datetime
 
 from google.transit import gtfs_realtime_pb2
@@ -5,13 +6,21 @@ from google.transit import gtfs_realtime_pb2
 from app.common.models.enums import Agency, VehicleStatus
 from app.common.models.gtfs_realtime import StopTimeUpdate, TripUpdate, VehiclePosition
 
+logger = logging.getLogger(__name__)
+
 
 def parse_vehicle_positions(pb_data: bytes, agency: Agency) -> list[VehiclePosition]:
     """
     Parse vehicle positions from VehiclePositions.pb feed.
     """
+    if not pb_data or len(pb_data) < 10:
+        return []
+
     feed = gtfs_realtime_pb2.FeedMessage()
-    feed.ParseFromString(pb_data)
+    try:
+        feed.ParseFromString(pb_data)
+    except Exception:
+        return []
 
     results: list[VehiclePosition] = []
 
@@ -74,8 +83,17 @@ def parse_trip_updates(pb_data: bytes, agency: Agency) -> list[TripUpdate]:
     """
     Parse trip updates from TripUpdates.pb feed.
     """
+    if not pb_data or len(pb_data) < 10:
+        logger.warning(f"TripUpdates {agency}: empty or too short ({len(pb_data) if pb_data else 0} bytes)")
+        return []
+
     feed = gtfs_realtime_pb2.FeedMessage()
-    feed.ParseFromString(pb_data)
+    try:
+        feed.ParseFromString(pb_data)
+    except Exception as e:
+        preview = pb_data[:50].hex() if pb_data else "None"
+        logger.warning(f"TripUpdates {agency}: parse failed, data preview: {preview}, error: {e}")
+        return []
 
     results: list[TripUpdate] = []
 

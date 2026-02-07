@@ -1,0 +1,63 @@
+import logging
+from datetime import datetime, timedelta
+
+from sqlalchemy.orm import Session
+
+from app.common.db.repositories.stop_event import StopEventRepository
+from app.common.models.events import StopEvent
+
+logger = logging.getLogger(__name__)
+
+
+class BatchWriter:
+    def __init__(
+        self,
+        session: Session,
+        batch_size: int = 100,
+        flush_interval: timedelta = timedelta(seconds=10),
+    ):
+        self._session = session
+        self._repo = StopEventRepository(session)
+        self._batch_size = batch_size
+        self._flush_interval = flush_interval
+        self._buffer: list[StopEvent] = []
+        self._last_flush = datetime.now()
+
+    def add_many(self, events: list[StopEvent]) -> None:
+        """
+        Add multiple events to buffer.
+        """
+        self._buffer.extend(events)
+
+        if self._should_flush():
+            self.flush()
+
+    def flush(self) -> int:
+        """
+        Write buffered events to database.
+
+        Note: Explicit commit/rollback needed because session runs in infinite loop so context manager automatic
+        commit never executes.
+        """
+        if not self._buffer:
+            return 0
+
+        try:
+            count = self._repo.insert_batch(self._buffer)
+            self._session.commit()
+            logger.info(f"Wrote {count} stop events")
+            self._buffer.clear()
+            self._last_flush = datetime.now()
+            return count
+        except Exception as e:
+            logger.exception(f"Failed to write batch: {e}")
+            self._session.rollback()
+            self._buffer.clear()
+            return 0
+
+    def _should_flush(self) -> bool:
+        if len(self._buffer) >= self._batch_size:
+            return True
+        if datetime.now() - self._last_flush > self._flush_interval:
+            return True
+        return False

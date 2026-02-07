@@ -1,6 +1,3 @@
-from datetime import date
-
-from sqlalchemy import select
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import Session
 
@@ -44,17 +41,5 @@ class StopEventRepository:
         stmt = insert(StopEventModel).values(rows)
         stmt = stmt.on_conflict_do_nothing(index_elements=["trip_id", "service_date", "stop_sequence"])
 
-        result = self._session.execute(stmt)
-        return result.rowcount or 0  # type: ignore[attr-defined]
-
-    def exists(self, trip_id: str, service_date: date, stop_sequence: int) -> bool:
-        stmt = (
-            select(StopEventModel.id)
-            .where(
-                StopEventModel.trip_id == trip_id,
-                StopEventModel.service_date == service_date,
-                StopEventModel.stop_sequence == stop_sequence,
-            )
-            .exists()
-        )
-        return self._session.scalar(select(stmt)) or False
+        self._session.execute(stmt)
+        return len(rows)
