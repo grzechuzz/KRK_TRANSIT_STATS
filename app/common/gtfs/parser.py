@@ -95,6 +95,9 @@ def parse_trip_updates(pb_data: bytes, agency: Agency) -> list[TripUpdate]:
         logger.warning(f"TripUpdates {agency}: parse failed, data preview: {preview}, error: {e}")
         return []
 
+    feed_ts = feed.header.timestamp if feed.header.timestamp else None
+    fallback_timestamp = datetime.fromtimestamp(feed_ts, tz=UTC) if feed_ts else datetime.now(UTC)
+
     results: list[TripUpdate] = []
 
     for entity in feed.entity:
@@ -111,9 +114,7 @@ def parse_trip_updates(pb_data: bytes, agency: Agency) -> list[TripUpdate]:
             vehicle_id = tu.vehicle.id or None
 
         ts = tu.timestamp if tu.timestamp else None
-        if not ts:
-            continue
-        timestamp = datetime.fromtimestamp(ts, tz=UTC)
+        timestamp = datetime.fromtimestamp(ts, tz=UTC) if ts else fallback_timestamp
 
         stop_time_updates: list[StopTimeUpdate] = []
         for stu in tu.stop_time_update:
