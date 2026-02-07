@@ -41,5 +41,5 @@ class StopEventRepository:
         stmt = insert(StopEventModel).values(rows)
         stmt = stmt.on_conflict_do_nothing(index_elements=["trip_id", "service_date", "stop_sequence"])
 
-        result = self._session.execute(stmt)
-        return max(result.rowcount or 0)  # type: ignore[attr-defined]
+        self._session.execute(stmt)
+        return len(rows)
