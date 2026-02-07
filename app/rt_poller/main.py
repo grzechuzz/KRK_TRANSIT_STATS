@@ -10,7 +10,7 @@ from app.rt_poller.publisher import Publisher
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
-POLL_INTERVAL_SECONDS = 3
+POLL_INTERVAL_SECONDS = 5
 
 
 def run_poller() -> None:
@@ -26,11 +26,11 @@ def run_poller() -> None:
             try:
                 vp_data = fetch_vehicle_positions(feed)
                 vp_count = publisher.publish_vehicle_positions(feed, vp_data)
-                logger.debug(f"{feed.agency.value}: Published {vp_count} vehicle positions")
 
                 tu_data = fetch_trip_updates(feed)
                 tu_count = publisher.process_trip_updates(feed, tu_data)
-                logger.debug(f"{feed.agency.value}: Cached {tu_count} trip updates")
+
+                logger.debug(f"{feed.agency.value}: VP={vp_count}, TU={tu_count}")
 
             except Exception as e:
                 logger.exception(f"Error polling {feed.agency.value}: {e}")
