@@ -30,7 +30,7 @@ def run_poller() -> None:
                 tu_data = fetch_trip_updates(feed)
                 tu_count = publisher.process_trip_updates(feed, tu_data)
 
-                logger.debug(f"{feed.agency.value}: VP={vp_count}, TU={tu_count}")
+                logger.info(f"{feed.agency.value}: VP={vp_count}, TU={tu_count}")
 
             except Exception as e:
                 logger.exception(f"Error polling {feed.agency.value}: {e}")
