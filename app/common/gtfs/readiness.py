@@ -1,14 +1,16 @@
 import logging
 import time
 
+from app.common.constants import GTFS_READINESS_POLL_INTERVAL, GTFS_READINESS_TIMEOUT, REDIS_KEY_GTFS_READY
 from app.common.redis.connection import get_client
-
-REDIS_KEY_GTFS_READY = "gtfs:ready"
 
 logger = logging.getLogger(__name__)
 
 
-def wait_for_gtfs_ready(timeout: int = 180, poll_interval: int = 5) -> None:
+def wait_for_gtfs_ready(
+        timeout: int = GTFS_READINESS_TIMEOUT,
+        poll_interval: int = GTFS_READINESS_POLL_INTERVAL
+) -> None:
     """Block until GTFS data is ready."""
     logger.info("Waiting for GTFS ready...")
     redis = get_client()

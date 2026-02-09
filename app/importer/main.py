@@ -3,6 +3,7 @@ import shutil
 import time
 from pathlib import Path
 
+from app.common.constants import IMPORT_CYCLE_SLEEP
 from app.common.db.connection import get_session
 from app.common.db.repositories.gtfs_meta import GtfsMetaRepository
 from app.common.feeds import get_all_feed_configs
@@ -71,7 +72,7 @@ def main() -> None:
         except Exception as e:
             logger.exception(f"Import cycle failed: {e}")
 
-        time.sleep(3600)
+        time.sleep(IMPORT_CYCLE_SLEEP)
 
 
 if __name__ == "__main__":

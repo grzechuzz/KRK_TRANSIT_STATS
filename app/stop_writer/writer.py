@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 
 from sqlalchemy.orm import Session
 
+from app.common.constants import WRITER_BATCH_SIZE, WRITER_FLUSH_INTERVAL
 from app.common.db.repositories.stop_event import StopEventRepository
 from app.common.models.events import StopEvent
 
@@ -13,8 +14,8 @@ class BatchWriter:
     def __init__(
         self,
         session: Session,
-        batch_size: int = 100,
-        flush_interval: timedelta = timedelta(seconds=10),
+        batch_size: int = WRITER_BATCH_SIZE,
+        flush_interval: timedelta = WRITER_FLUSH_INTERVAL,
     ):
         self._session = session
         self._repo = StopEventRepository(session)

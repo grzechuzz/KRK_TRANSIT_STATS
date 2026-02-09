@@ -2,11 +2,10 @@ from datetime import UTC, datetime
 
 import redis
 
+from app.common.constants import REDIS_TRIP_UPDATES_TTL
 from app.common.models.gtfs_realtime import TripUpdate
 from app.common.redis import serializer
 from app.common.redis.schemas import CachedStopTime, TripUpdateCache
-
-TRIP_UPDATES_TTL = 3 * 60 * 60  # 3h
 
 
 class TripUpdatesRepository:
@@ -79,7 +78,7 @@ class TripUpdatesRepository:
             created_at=existing.created_at if existing else now,
             last_min_seq=incoming_min_seq or prev_min_seq,
         )
-        self._redis.setex(key, TRIP_UPDATES_TTL, serializer.encode(cache))
+        self._redis.setex(key, REDIS_TRIP_UPDATES_TTL, serializer.encode(cache))
 
     def delete(self, agency: str, trip_id: str) -> None:
         self._redis.delete(self._key(agency, trip_id))

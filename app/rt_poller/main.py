@@ -1,6 +1,7 @@
 import logging
 import time
 
+from app.common.constants import POLL_INTERVAL_SECONDS
 from app.common.feeds import get_all_feed_configs
 from app.common.gtfs.readiness import wait_for_gtfs_ready
 from app.common.redis.connection import get_client
@@ -9,8 +10,6 @@ from app.rt_poller.publisher import Publisher
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
-
-POLL_INTERVAL_SECONDS = 5
 
 
 def run_poller() -> None:

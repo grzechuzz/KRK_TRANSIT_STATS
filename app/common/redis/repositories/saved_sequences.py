@@ -2,7 +2,7 @@ from datetime import date
 
 import redis
 
-SAVED_SEQS_TTL = 24 * 60 * 60  # 24h
+from app.common.constants import REDIS_SAVED_SEQS_TTL
 
 
 class SavedSequencesRepository:
@@ -19,4 +19,4 @@ class SavedSequencesRepository:
     def mark_saved(self, agency: str, trip_id: str, service_date: date, stop_sequence: int) -> None:
         key = self._key(agency, trip_id, service_date)
         self._redis.sadd(key, str(stop_sequence))
-        self._redis.expire(key, SAVED_SEQS_TTL)
+        self._redis.expire(key, REDIS_SAVED_SEQS_TTL)
