@@ -1,9 +1,8 @@
 import redis
 
+from app.common.constants import REDIS_VEHICLE_STATE_TTL
 from app.common.redis import serializer
 from app.common.redis.schemas import VehicleState
-
-VEHICLE_STATE_TTL = 3 * 60 * 60  # 3h
 
 
 class VehicleStateRepository:
@@ -25,7 +24,7 @@ class VehicleStateRepository:
 
     def save(self, state: VehicleState) -> None:
         key = self._key(state.agency, state.license_plate)
-        self._redis.setex(key, VEHICLE_STATE_TTL, serializer.encode(state))
+        self._redis.setex(key, REDIS_VEHICLE_STATE_TTL, serializer.encode(state))
 
     def delete(self, agency: str, license_plate: str) -> None:
         self._redis.delete(self._key(agency, license_plate))

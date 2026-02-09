@@ -16,6 +16,7 @@ from zoneinfo import ZoneInfo
 
 from sqlalchemy.orm import Session
 
+from app.common.constants import CACHE_MAX_SEQUENCES, CACHE_MAX_STOP_TIMES, CACHE_MAX_STOPS, CACHE_MAX_TRIPS
 from app.common.db.models import CurrentStop, CurrentStopTime, CurrentTrip
 from app.common.db.repositories.gtfs_meta import GtfsMetaRepository
 from app.common.db.repositories.gtfs_static import GtfsStaticRepository
@@ -270,7 +271,7 @@ class StopEventDetector:
             trip = self._static_repo.get_trip(trip_id)
             if trip:
                 self._trip_cache[trip_id] = trip
-                if len(self._trip_cache) > 5000:
+                if len(self._trip_cache) > CACHE_MAX_TRIPS:
                     self._trip_cache.clear()
         return self._trip_cache.get(trip_id)
 
@@ -279,7 +280,7 @@ class StopEventDetector:
             stop = self._static_repo.get_stop(stop_id)
             if stop:
                 self._stop_cache[stop_id] = stop
-                if len(self._stop_cache) > 5000:
+                if len(self._stop_cache) > CACHE_MAX_STOPS:
                     self._stop_cache.clear()
         return self._stop_cache.get(stop_id)
 
@@ -287,7 +288,7 @@ class StopEventDetector:
         if trip_id not in self._stop_times_cache:
             stop_times = self._static_repo.get_stop_times_for_trip(trip_id)
             self._stop_times_cache[trip_id] = {st.stop_sequence: st for st in stop_times}
-            if len(self._stop_times_cache) > 2000:
+            if len(self._stop_times_cache) > CACHE_MAX_STOP_TIMES:
                 self._stop_times_cache.clear()
         return self._stop_times_cache.get(trip_id, {}).get(stop_sequence)
 
@@ -296,6 +297,6 @@ class StopEventDetector:
             max_seq = self._static_repo.get_max_stop_sequence(trip_id)
             if max_seq:
                 self._max_seq_cache[trip_id] = max_seq
-                if len(self._max_seq_cache) > 5000:
+                if len(self._max_seq_cache) > CACHE_MAX_SEQUENCES:
                     self._max_seq_cache.clear()
         return self._max_seq_cache.get(trip_id)

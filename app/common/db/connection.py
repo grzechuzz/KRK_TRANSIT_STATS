@@ -6,6 +6,7 @@ from sqlalchemy import Engine, create_engine
 from sqlalchemy.orm import Session, sessionmaker
 
 from app.common.config import get_config
+from app.common.constants import DB_MAX_OVERFLOW, DB_POOL_SIZE
 
 
 @lru_cache(maxsize=1)
@@ -15,8 +16,8 @@ def get_engine() -> Engine:
     return create_engine(
         config.database.url,
         pool_pre_ping=True,
-        pool_size=5,
-        max_overflow=10,
+        pool_size=DB_POOL_SIZE,
+        max_overflow=DB_MAX_OVERFLOW,
         echo=False,
     )
 

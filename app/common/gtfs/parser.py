@@ -3,6 +3,7 @@ from datetime import UTC, datetime
 
 from google.transit import gtfs_realtime_pb2
 
+from app.common.constants import PB_MIN_PAYLOAD_BYTES
 from app.common.models.enums import Agency, VehicleStatus
 from app.common.models.gtfs_realtime import StopTimeUpdate, TripUpdate, VehiclePosition
 
@@ -13,7 +14,7 @@ def parse_vehicle_positions(pb_data: bytes, agency: Agency) -> list[VehiclePosit
     """
     Parse vehicle positions from VehiclePositions.pb feed.
     """
-    if not pb_data or len(pb_data) < 10:
+    if not pb_data or len(pb_data) < PB_MIN_PAYLOAD_BYTES:
         return []
 
     feed = gtfs_realtime_pb2.FeedMessage()
@@ -83,7 +84,7 @@ def parse_trip_updates(pb_data: bytes, agency: Agency) -> list[TripUpdate]:
     """
     Parse trip updates from TripUpdates.pb feed.
     """
-    if not pb_data or len(pb_data) < 10:
+    if not pb_data or len(pb_data) < PB_MIN_PAYLOAD_BYTES:
         logger.warning(f"TripUpdates {agency}: empty or too short ({len(pb_data) if pb_data else 0} bytes)")
         return []
 

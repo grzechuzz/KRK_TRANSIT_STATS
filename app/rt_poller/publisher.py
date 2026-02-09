@@ -3,6 +3,7 @@ import logging
 
 import redis
 
+from app.common.constants import CACHE_MAX_STOP_ID_TO_SEQ
 from app.common.db.connection import get_session
 from app.common.db.repositories.gtfs_static import GtfsStaticRepository
 from app.common.feeds import FeedConfig
@@ -12,7 +13,6 @@ from app.common.redis.repositories.trip_updates import TripUpdatesRepository
 logger = logging.getLogger(__name__)
 
 VEHICLE_POSITIONS_CHANNEL = "vehicle_positions"
-MAX_CACHE_SIZE = 5000
 
 
 class Publisher:
@@ -64,7 +64,7 @@ class Publisher:
         if trip_id not in self._stop_id_to_seq_cache:
             self._stop_id_to_seq_cache[trip_id] = repo.build_stop_id_to_sequence_map(trip_id)
 
-            if len(self._stop_id_to_seq_cache) > MAX_CACHE_SIZE:
+            if len(self._stop_id_to_seq_cache) > CACHE_MAX_STOP_ID_TO_SEQ:
                 self._stop_id_to_seq_cache.clear()
                 self._stop_id_to_seq_cache[trip_id] = repo.build_stop_id_to_sequence_map(trip_id)
 
