@@ -133,9 +133,9 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
+    op.drop_table("stop_events_2026_04")
     op.drop_table("stop_events_2026_03")
     op.drop_table("stop_events_2026_02")
-    op.drop_table("stop_events_2026_01")
     op.drop_table("stop_events")
     op.drop_table("current_shapes")
     op.drop_table("current_stop_times")
