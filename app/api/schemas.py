@@ -1,4 +1,12 @@
+from enum import StrEnum
+
 import msgspec
+
+
+class Period(StrEnum):
+    TODAY = "today"
+    WEEK = "week"
+    MONTH = "month"
 
 
 class MaxDelayBetweenStops(msgspec.Struct):
