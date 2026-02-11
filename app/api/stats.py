@@ -1,10 +1,10 @@
 from typing import Any
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, Response, status
 
+from app.api import cache
 from app.api.db import DbSession
 from app.api.repository import StatsRepository, resolve_date_range
-from app.api.response import MsgspecJSONResponse
 from app.api.schemas import (
     LineSummary,
     LineSummaryResponse,
@@ -21,6 +21,8 @@ from app.api.schemas import (
 
 router = APIRouter(prefix="/lines", tags=["statistics"])
 
+JSON = "application/json"
+
 
 def _to_str(row: dict[str, Any]) -> dict[str, Any]:
     return {k: str(v) if not isinstance(v, (str, int, float)) else v for k, v in row.items()}
@@ -34,12 +36,23 @@ def _check_line_exists(trips: int, line_number: str, period: Period) -> None:
         )
 
 
+def _from_cache(endpoint: str, period: Period, line_number: str = "") -> Response | None:
+    raw = cache.get_cached(endpoint, period, line_number)
+    if raw is not None:
+        return Response(content=raw, media_type=JSON)
+    return None
+
+
 @router.get("/{line_number}/stats/max-delay-between-stops")
 def get_max_delay_between_stops(
     line_number: str,
     db: DbSession,
     period: PeriodQuery = Period.TODAY,
-) -> MsgspecJSONResponse:
+) -> Response:
+    cached = _from_cache("max-delay-between-stops", period, line_number)
+    if cached:
+        return cached
+
     start, end = resolve_date_range(period)
     repo = StatsRepository(db)
 
@@ -48,14 +61,14 @@ def get_max_delay_between_stops(
 
     rows = repo.max_delay_between_stops(line_number, start, end)
 
-    return MsgspecJSONResponse(
-        content=MaxDelayBetweenStopsResponse(
-            line_number=line_number,
-            period=period.value,
-            max_delay=[MaxDelayBetweenStops(**_to_str(row)) for row in rows],
-            trips_analyzed=trips,
-        )
+    result = MaxDelayBetweenStopsResponse(
+        line_number=line_number,
+        period=period.value,
+        max_delay=[MaxDelayBetweenStops(**_to_str(row)) for row in rows],
+        trips_analyzed=trips,
     )
+    raw = cache.set_cached("max-delay-between-stops", period, result, line_number)
+    return Response(content=raw, media_type=JSON)
 
 
 @router.get("/{line_number}/stats/route-delay")
@@ -63,7 +76,11 @@ def get_route_delay(
     line_number: str,
     db: DbSession,
     period: PeriodQuery = Period.TODAY,
-) -> MsgspecJSONResponse:
+) -> Response:
+    cached = _from_cache("route-delay", period, line_number)
+    if cached:
+        return cached
+
     start, end = resolve_date_range(period)
     repo = StatsRepository(db)
 
@@ -72,32 +89,36 @@ def get_route_delay(
 
     rows = repo.max_route_delay(line_number, start, end)
 
-    return MsgspecJSONResponse(
-        content=RouteDelayResponse(
-            line_number=line_number,
-            period=period.value,
-            max_route_delay=[RouteDelay(**_to_str(row)) for row in rows],
-            trips_analyzed=trips,
-        )
+    result = RouteDelayResponse(
+        line_number=line_number,
+        period=period.value,
+        max_route_delay=[RouteDelay(**_to_str(row)) for row in rows],
+        trips_analyzed=trips,
     )
+    raw = cache.set_cached("route-delay", period, result, line_number)
+    return Response(content=raw, media_type=JSON)
 
 
 @router.get("/stats/summary")
 def get_lines_summary(
     db: DbSession,
     period: PeriodQuery = Period.TODAY,
-) -> MsgspecJSONResponse:
+) -> Response:
+    cached = _from_cache("summary", period)
+    if cached:
+        return cached
+
     start, end = resolve_date_range(period)
     repo = StatsRepository(db)
 
     rows = repo.lines_summary(start, end)
 
-    return MsgspecJSONResponse(
-        content=LineSummaryResponse(
-            period=period.value,
-            lines=[LineSummary(**_to_str(r)) for r in rows],
-        )
+    result = LineSummaryResponse(
+        period=period.value,
+        lines=[LineSummary(**_to_str(r)) for r in rows],
     )
+    raw = cache.set_cached("summary", period, result)
+    return Response(content=raw, media_type=JSON)
 
 
 @router.get("/{line_number}/stats/punctuality")
@@ -105,7 +126,11 @@ def get_punctuality(
     line_number: str,
     db: DbSession,
     period: PeriodQuery = Period.TODAY,
-) -> MsgspecJSONResponse:
+) -> Response:
+    cached = _from_cache("punctuality", period, line_number)
+    if cached:
+        return cached
+
     start, end = resolve_date_range(period)
     repo = StatsRepository(db)
 
@@ -115,19 +140,19 @@ def get_punctuality(
     row = repo.punctuality(line_number, start, end)
     total = row["total"]
 
-    return MsgspecJSONResponse(
-        content=PunctualityResponse(
-            line_number=line_number,
-            period=period.value,
-            total_trips=total,
-            on_time_count=row["on_time"],
-            on_time_percent=round(row["on_time"] / total * 100, 1) if total else 0.0,
-            slightly_delayed_count=row["slightly_delayed"],
-            slightly_delayed_percent=round(row["slightly_delayed"] / total * 100, 1) if total else 0.0,
-            delayed_count=row["delayed"],
-            delayed_percent=round(row["delayed"] / total * 100, 1) if total else 0.0,
-        )
+    result = PunctualityResponse(
+        line_number=line_number,
+        period=period.value,
+        total_trips=total,
+        on_time_count=row["on_time"],
+        on_time_percent=round(row["on_time"] / total * 100, 1) if total else 0.0,
+        slightly_delayed_count=row["slightly_delayed"],
+        slightly_delayed_percent=round(row["slightly_delayed"] / total * 100, 1) if total else 0.0,
+        delayed_count=row["delayed"],
+        delayed_percent=round(row["delayed"] / total * 100, 1) if total else 0.0,
     )
+    raw = cache.set_cached("punctuality", period, result, line_number)
+    return Response(content=raw, media_type=JSON)
 
 
 @router.get("/{line_number}/stats/trend")
@@ -135,7 +160,11 @@ def get_trend(
     line_number: str,
     db: DbSession,
     period: PeriodQuery = Period.MONTH,
-) -> MsgspecJSONResponse:
+) -> Response:
+    cached = _from_cache("trend", period, line_number)
+    if cached:
+        return cached
+
     start, end = resolve_date_range(period)
     repo = StatsRepository(db)
 
@@ -144,10 +173,10 @@ def get_trend(
 
     rows = repo.trend(line_number, start, end)
 
-    return MsgspecJSONResponse(
-        content=TrendResponse(
-            line_number=line_number,
-            period=period.value,
-            days=[TrendDay(**_to_str(r)) for r in rows],
-        )
+    result = TrendResponse(
+        line_number=line_number,
+        period=period.value,
+        days=[TrendDay(**_to_str(r)) for r in rows],
     )
+    raw = cache.set_cached("trend", period, result, line_number)
+    return Response(content=raw, media_type=JSON)
