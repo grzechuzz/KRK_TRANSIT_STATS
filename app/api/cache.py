@@ -1,5 +1,4 @@
 import msgspec
-
 import redis
 
 from app.api.schemas import Period
