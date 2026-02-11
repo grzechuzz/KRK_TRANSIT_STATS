@@ -43,3 +43,6 @@ MIN_DELAY_SECONDS: int = -90  # stops with delay below this are treated as garba
 CACHE_TTL_TODAY: int = 120
 CACHE_TTL_WEEK: int = 300
 CACHE_TTL_MONTH: int = 900
+
+# User agent
+USER_AGENT = "MPK-Krakow-Stats/0.1"
