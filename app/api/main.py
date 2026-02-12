@@ -29,7 +29,7 @@ def create_app() -> FastAPI:
     setup_middleware(app)
     setup_exception_handlers(app)
 
-    app.include_router(router, prefix="/api/v1")
+    app.include_router(router, prefix="/v1")
 
     return app
 

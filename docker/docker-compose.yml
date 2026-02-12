@@ -106,8 +106,6 @@ services:
     depends_on:
       gtfs_db:
         condition: service_healthy
-    ports:
-      - "8000:8000"
     secrets:
       - db_password
       - redis_password
@@ -122,6 +120,21 @@ services:
       REDIS_HOST: redis
       REDIS_PORT: 6379
 
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    environment:
+      DOMAIN: ${DOMAIN:-localhost}
+    depends_on:
+      - api
+
 secrets:
   db_password:
     file: ../secrets/db_password
@@ -130,3 +143,5 @@ secrets:
 
 volumes:
   gtfs_pg:
+  caddy_data:
+  caddy_config:
