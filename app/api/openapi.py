@@ -8,13 +8,18 @@ def openapi_response(
 ) -> dict[int | str, dict[str, Any]]:
     schema, defs = msgspec.json.schema(struct_type)
 
-    content: dict[str, Any] = {"schema": schema}
+    result: dict[str, Any] = {}
     if defs:
-        content["schema"]["$defs"] = defs
+        result["$defs"] = defs
+
+    if isinstance(schema, str):
+        result["$ref"] = schema
+    else:
+        result.update(schema)
 
     return {
         200: {
             "description": description,
-            "content": {"application/json": content},
+            "content": {"application/json": {"schema": result}},
         }
     }
