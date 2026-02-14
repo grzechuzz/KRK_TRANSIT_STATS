@@ -3,19 +3,11 @@ import logging
 import requests
 
 from app.common.constants import PB_MIN_PAYLOAD_BYTES, USER_AGENT
-from app.common.db.connection import get_session
-from app.common.db.repositories.gtfs_static import GtfsStaticRepository
 from app.common.feeds import get_all_feed_configs
 from app.common.gtfs.parser import parse_vehicle_positions
 from app.common.models.gtfs_realtime import VehiclePosition
 
 logger = logging.getLogger(__name__)
-
-
-def load_trip_info() -> dict[str, tuple[str, str]]:
-    """Load trip_id -> (line_number, headsign) via GtfsStaticRepository."""
-    with get_session() as session:
-        return GtfsStaticRepository(session).get_all_trip_info()
 
 
 def fetch_all_positions() -> list[VehiclePosition]:
