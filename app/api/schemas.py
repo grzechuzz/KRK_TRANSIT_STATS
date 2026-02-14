@@ -27,7 +27,8 @@ class MaxDelayBetweenStops(msgspec.Struct):
 
 class MaxDelayBetweenStopsResponse(msgspec.Struct):
     line_number: str
-    period: str
+    start_date: str
+    end_date: str
     max_delay: list[MaxDelayBetweenStops]
     trips_analyzed: int
 
@@ -51,7 +52,8 @@ class RouteDelay(msgspec.Struct):
 
 class RouteDelayResponse(msgspec.Struct):
     line_number: str
-    period: str
+    start_date: str
+    end_date: str
     max_route_delay: list[RouteDelay]
     trips_analyzed: int
 
@@ -65,7 +67,8 @@ class PunctualityResponse(msgspec.Struct):
     """
 
     line_number: str
-    period: str
+    start_date: str
+    end_date: str
     total_stops: int
     on_time_count: int
     on_time_percent: float
@@ -83,7 +86,8 @@ class TrendDay(msgspec.Struct):
 
 class TrendResponse(msgspec.Struct):
     line_number: str
-    period: str
+    start_date: str
+    end_date: str
     days: list[TrendDay]
 
 
