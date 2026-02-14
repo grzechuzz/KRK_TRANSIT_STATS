@@ -27,3 +27,8 @@ class GtfsStaticRepository:
     def build_stop_id_to_sequence_map(self, trip_id: str) -> dict[str, int]:
         stop_times = self.get_stop_times_for_trip(trip_id)
         return {st.stop_id: st.stop_sequence for st in stop_times}
+
+    def get_all_trip_info(self) -> dict[str, tuple[str, str]]:
+        stmt = select(CurrentTrip).options(joinedload(CurrentTrip.route))
+        trips = self._session.scalars(stmt).unique().all()
+        return {t.trip_id: (t.route.route_short_name, t.headsign or "") for t in trips}

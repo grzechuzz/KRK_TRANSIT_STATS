@@ -3,10 +3,11 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
+from app.api.controllers.stats_controller import router as stats_router
+from app.api.controllers.vehicles_controller import router as vehicles_router
 from app.api.exceptions import setup_exception_handlers
 from app.api.middleware import setup_middleware
 from app.api.response import MsgspecJSONResponse
-from app.api.stats import router
 from app.common.db.connection import get_engine
 
 
@@ -29,7 +30,8 @@ def create_app() -> FastAPI:
     setup_middleware(app)
     setup_exception_handlers(app)
 
-    app.include_router(router, prefix="/v1")
+    app.include_router(stats_router, prefix="/v1")
+    app.include_router(vehicles_router, prefix="/v1")
 
     return app
 
