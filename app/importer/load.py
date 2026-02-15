@@ -7,7 +7,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from sqlalchemy import delete, select
+from sqlalchemy import delete, select, text
 from sqlalchemy.orm import Session
 
 from app.common.db.models import CurrentRoute, CurrentShape, CurrentStop, CurrentStopTime, CurrentTrip
@@ -89,20 +89,42 @@ TABLE_MAPPINGS = [
 
 
 def _delete_agency_data(session: Session, agency_id: str) -> None:
-    """Delete all GTFS data for a specific agency using efficient subqueries."""
+    """Delete all GTFS static data for agency"""
     logger.info(f"[{agency_id}] Deleting old data...")
 
-    routes_subq = select(CurrentRoute.route_id).where(CurrentRoute.agency_id == agency_id)
-    trips_subq = select(CurrentTrip.trip_id).where(CurrentTrip.route_id.in_(routes_subq))
-    stops_subq = select(CurrentStopTime.stop_id.distinct()).where(CurrentStopTime.trip_id.in_(trips_subq))
+    route_ids = [
+        r[0] for r in session.execute(select(CurrentRoute.route_id).where(CurrentRoute.agency_id == agency_id)).all()
+    ]
 
-    session.execute(delete(CurrentStopTime).where(CurrentStopTime.trip_id.in_(trips_subq)))
-    session.execute(delete(CurrentStop).where(CurrentStop.stop_id.in_(stops_subq)))
-    session.execute(delete(CurrentTrip).where(CurrentTrip.route_id.in_(routes_subq)))
-    session.execute(delete(CurrentRoute).where(CurrentRoute.agency_id == agency_id))
+    if not route_ids:
+        logger.info(f"[{agency_id}] No existing data")
+        return
+
+    trip_ids = [
+        t[0] for t in session.execute(select(CurrentTrip.trip_id).where(CurrentTrip.route_id.in_(route_ids))).all()
+    ]
+
+    stop_ids = [
+        s[0]
+        for s in session.execute(
+            select(CurrentStopTime.stop_id).where(CurrentStopTime.trip_id.in_(trip_ids)).distinct()
+        ).all()
+    ]
+
+    if trip_ids:
+        session.execute(delete(CurrentStopTime).where(CurrentStopTime.trip_id.in_(trip_ids)))
+
+        session.execute(delete(CurrentTrip).where(CurrentTrip.trip_id.in_(trip_ids)))
+
+    session.execute(delete(CurrentRoute).where(CurrentRoute.route_id.in_(route_ids)))
+
     session.execute(delete(CurrentShape).where(CurrentShape.agency_id == agency_id))
 
+    if stop_ids:
+        session.execute(delete(CurrentStop).where(CurrentStop.stop_id.in_(stop_ids)))
+
     session.flush()
+
     logger.info(f"[{agency_id}] Delete complete")
 
 
@@ -121,19 +143,63 @@ def _copy_to_table(session: Session, table_name: str, columns: list[str], data: 
         copy.write(data.getvalue())
 
 
+def _upsert_via_copy(
+    session: Session, table_name: str, columns: list[str], data: io.StringIO, pk_columns: list[str]
+) -> None:
+    raw_conn = session.connection().connection.dbapi_connection
+    if raw_conn is None:
+        raise RuntimeError("No database connection available")
+
+    cursor = raw_conn.cursor()
+    temp_table = f"tmp_{table_name}"
+    session.execute(
+        text(f"CREATE TEMP TABLE IF NOT EXISTS {temp_table} (LIKE {table_name} INCLUDING DEFAULTS) ON COMMIT DROP")
+    )
+    session.execute(text(f"TRUNCATE {temp_table}"))
+
+    data.seek(0)
+    columns_fmt = ",".join(columns)
+
+    with cursor.copy(f"COPY {temp_table} ({columns_fmt}) FROM STDIN WITH (FORMAT CSV)") as copy:
+        copy.write(data.getvalue())
+
+    update_set = ", ".join([f"{col} = EXCLUDED.{col}" for col in columns if col not in pk_columns])
+    conflict_target = ", ".join(pk_columns)
+
+    sql = f"""
+        INSERT INTO {table_name} ({columns_fmt})
+        SELECT {columns_fmt} FROM {temp_table}
+        ON CONFLICT ({conflict_target})
+        DO UPDATE SET {update_set}
+    """
+    session.execute(text(sql))
+
+
 def _load_table(session: Session, zf: zipfile.ZipFile, mapping: TableMapping, agency_id: str) -> None:
-    """Load a single GTFS file into its corresponding database table."""
     logger.info(f"[{agency_id}] Loading {mapping.gtfs_file}...")
 
     buf = io.StringIO()
     writer = csv.writer(buf)
+    seen_ids = set()
 
     with zf.open(mapping.gtfs_file) as f:
         reader = csv.DictReader(line.decode("utf-8-sig") for line in f)
         for row in reader:
-            writer.writerow(mapping.row_transformer(row, agency_id))
+            transformed_row = mapping.row_transformer(row, agency_id)
+            row_id = transformed_row[0]
 
-    _copy_to_table(session, mapping.table_name, mapping.columns, buf)
+            if row_id in seen_ids:
+                continue
+
+            seen_ids.add(row_id)
+            writer.writerow(transformed_row)
+
+    if mapping.table_name == "current_stops":
+        _upsert_via_copy(session, mapping.table_name, mapping.columns, buf, pk_columns=["stop_id"])
+    elif mapping.table_name == "current_routes":
+        _upsert_via_copy(session, mapping.table_name, mapping.columns, buf, pk_columns=["route_id"])
+    else:
+        _copy_to_table(session, mapping.table_name, mapping.columns, buf)
 
 
 def load_gtfs_zip(session: Session, zip_path: Path, agency_id: str) -> None:
