@@ -28,7 +28,7 @@ class GtfsStaticRepository:
         stop_times = self.get_stop_times_for_trip(trip_id)
         return {st.stop_id: st.stop_sequence for st in stop_times}
 
-    def get_all_trip_info(self) -> dict[str, tuple[str, str, str]]:
+    def get_all_trip_info(self) -> dict[str, tuple[str, str, str | None]]:
         stmt = select(CurrentTrip).options(joinedload(CurrentTrip.route))
         trips = self._session.scalars(stmt).unique().all()
         return {t.trip_id: (t.route.route_short_name, t.headsign or "", t.shape_id) for t in trips}
