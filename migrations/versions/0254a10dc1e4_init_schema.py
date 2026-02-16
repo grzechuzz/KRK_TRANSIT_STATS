@@ -25,10 +25,12 @@ def upgrade() -> None:
         sa.Column("route_short_name", sa.Text(), nullable=False),
         sa.PrimaryKeyConstraint("route_id")
     )
+    op.create_index("idx_current_routes_agency", "current_routes", ["agency_id"])
 
     op.create_table(
         "current_stops",
         sa.Column("stop_id", sa.Text(), nullable=False),
+        sa.Column("agency_id", sa.Text(), nullable=False),
         sa.Column("stop_name", sa.Text(), nullable=False),
         sa.Column("stop_code", sa.Text(), nullable=True),
         sa.Column("stop_desc", sa.Text(), nullable=True),
@@ -36,11 +38,13 @@ def upgrade() -> None:
         sa.Column("stop_lon", sa.Double(), nullable=True),
         sa.PrimaryKeyConstraint("stop_id")
     )
+    op.create_index("idx_current_stops_agency", "current_stops", ["agency_id"])
 
     op.create_table(
         "current_trips",
         sa.Column("trip_id", sa.Text(), nullable=False),
         sa.Column("route_id", sa.Text(), nullable=False),
+        sa.Column("agency_id", sa.Text(), nullable=False),
         sa.Column("service_id", sa.Text(), nullable=False),
         sa.Column("direction_id", sa.SmallInteger(), nullable=True),
         sa.Column("headsign", sa.Text(), nullable=True),
@@ -50,12 +54,14 @@ def upgrade() -> None:
     )
     op.create_index("idx_current_trips_route", "current_trips", ["route_id"])
     op.create_index("idx_current_trips_shape", "current_trips", ["shape_id"])
+    op.create_index("idx_current_trips_agency", "current_trips", ["agency_id"])
 
     op.create_table(
         "current_stop_times",
         sa.Column("trip_id", sa.Text(), nullable=False),
         sa.Column("stop_sequence", sa.Integer(), nullable=False),
         sa.Column("stop_id", sa.Text(), nullable=False),
+        sa.Column("agency_id", sa.Text(), nullable=False),
         sa.Column("arrival_seconds", sa.Integer(), nullable=False),
         sa.Column("departure_seconds", sa.Integer(), nullable=True),
         sa.PrimaryKeyConstraint("trip_id", "stop_sequence"),
@@ -63,6 +69,7 @@ def upgrade() -> None:
         sa.ForeignKeyConstraint(["stop_id"], ["current_stops.stop_id"])
     )
     op.create_index("idx_current_stop_times_stop", "current_stop_times", ["stop_id"])
+    op.create_index("idx_current_stop_times_agency", "current_stop_times", ["agency_id"])
 
     op.create_table(
         "current_shapes",
@@ -74,6 +81,7 @@ def upgrade() -> None:
         sa.Column("shape_pt_sequence", sa.Integer(), nullable=False),
         sa.PrimaryKeyConstraint("id"),
     )
+    op.create_index("idx_current_shapes_agency", "current_shapes", ["agency_id"])
 
     op.execute("""
         CREATE TABLE stop_events (
