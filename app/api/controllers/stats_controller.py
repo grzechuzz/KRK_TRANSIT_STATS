@@ -6,6 +6,7 @@ from app.api import schemas_docs as docs
 from app.api.db import DbSession
 from app.api.schemas import EndDateQuery, StartDateQuery
 from app.api.services.stats_service import StatsService
+from app.api.validation import validate_date_range
 
 router = APIRouter(prefix="/lines", tags=["statistics"])
 
@@ -42,6 +43,7 @@ def get_max_delay_between_stops(
     The first and last stops are intentionally excluded as they often contain garbage data
     (e.g., GPS drift during layovers, driver login delays).
     """
+    validate_date_range(start_date, end_date)
     return Response(content=service.max_delay_between_stops(line_number, start_date, end_date), media_type=JSON)
 
 
@@ -69,6 +71,7 @@ def get_route_delay(
     The first and last stops are intentionally excluded as they often contain garbage data
     (e.g., GPS drift during layovers, driver login delays).
     """
+    validate_date_range(start_date, end_date)
     return Response(content=service.route_delay(line_number, start_date, end_date), media_type=JSON)
 
 
@@ -100,6 +103,7 @@ def get_punctuality(
     The first and last stops are intentionally excluded as they often contain garbage data
     (e.g., GPS drift during layovers, driver login delays).
     """
+    validate_date_range(start_date, end_date)
     return Response(content=service.punctuality(line_number, start_date, end_date), media_type=JSON)
 
 
@@ -126,4 +130,5 @@ def get_trend(
     The first and last stops are intentionally excluded as they often contain garbage data
     (e.g., GPS drift during layovers, driver login delays).
     """
+    validate_date_range(start_date, end_date)
     return Response(content=service.trend(line_number, start_date, end_date), media_type=JSON)

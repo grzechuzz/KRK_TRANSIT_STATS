@@ -4,8 +4,20 @@ from typing import Annotated
 import msgspec
 from fastapi import Query
 
-StartDateQuery = Annotated[date, Query(description="Start date (inclusive), e.g. 2026-02-01")]
-EndDateQuery = Annotated[date, Query(description="End date (inclusive), e.g. 2026-02-13")]
+StartDateQuery = Annotated[
+    date,
+    Query(
+        description="Start service date (inclusive), e.g. 2026-02-01. "
+        "Note: overnight trips (lines 6XX, 9XX) belong to the previous service date."
+    ),
+]
+EndDateQuery = Annotated[
+    date,
+    Query(
+        description="End service date (inclusive), e.g. 2026-02-13. "
+        "Note: overnight trips (lines 6XX, 9XX) belong to the previous service date."
+    ),
+]
 
 
 class MaxDelayBetweenStops(msgspec.Struct):
