@@ -49,5 +49,8 @@ MIN_DELAY_SECONDS: int = -90  # stops with delay below this are treated as garba
 DEFAULT_TTL: int = 90
 LONG_TTL: int = 600
 
+# API dates filter
+MAX_DATE_RANGE_DAYS = 365
+
 # User agent
 USER_AGENT = "MPK-Krakow-Stats/0.1"

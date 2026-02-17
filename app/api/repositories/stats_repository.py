@@ -127,14 +127,18 @@ class StatsRepository:
                         ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING
                     )
                 )
-                SELECT DISTINCT ON (trip_id, service_date) trip_id, service_date, line_number,
-                license_plate AS vehicle_number, first_stop, last_stop,
-                first_planned_time, first_event_time, last_planned_time, last_event_time,
-                start_delay AS start_delay_seconds, end_delay AS end_delay_seconds,
-                (end_delay - start_delay) AS delay_generated_seconds, headsign
-                FROM trip_bounds
-                WHERE start_delay >= :min_delay
-                ORDER BY trip_id, service_date, delay_generated_seconds DESC
+                SELECT * FROM (
+                    SELECT DISTINCT ON (trip_id, service_date) trip_id, service_date, line_number,
+                    license_plate AS vehicle_number, first_stop, last_stop,
+                    first_planned_time, first_event_time, last_planned_time, last_event_time,
+                    start_delay AS start_delay_seconds, end_delay AS end_delay_seconds,
+                    (end_delay - start_delay) AS delay_generated_seconds, headsign
+                    FROM trip_bounds
+                    WHERE start_delay >= :min_delay
+                    ORDER BY trip_id, service_date, delay_generated_seconds DESC
+                ) ranked
+                ORDER BY delay_generated_seconds DESC
+                LIMIT 10
             """),
             {
                 "line_number": line_number,
@@ -143,9 +147,7 @@ class StatsRepository:
                 "min_delay": MIN_DELAY_SECONDS,
             },
         )
-        rows = [dict(r) for r in result.mappings().all()]
-        rows.sort(key=lambda r: r["delay_generated_seconds"], reverse=True)
-        return rows[:10]
+        return [dict(r) for r in result.mappings().all()]
 
     def punctuality(self, line_number: str, start_date: date, end_date: date) -> dict[str, Any]:
         """

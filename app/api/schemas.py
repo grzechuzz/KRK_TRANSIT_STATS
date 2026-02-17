@@ -2,10 +2,42 @@ from datetime import date
 from typing import Annotated
 
 import msgspec
-from fastapi import Query
+from fastapi import Path, Query
 
-StartDateQuery = Annotated[date, Query(description="Start date (inclusive), e.g. 2026-02-01")]
-EndDateQuery = Annotated[date, Query(description="End date (inclusive), e.g. 2026-02-13")]
+StartDateQuery = Annotated[
+    date,
+    Query(
+        description="Start service date (inclusive), e.g. 2026-02-01. "
+        "Note: overnight trips (lines 6XX, 9XX) belong to the previous service date."
+    ),
+]
+EndDateQuery = Annotated[
+    date,
+    Query(
+        description="End service date (inclusive), e.g. 2026-02-13. "
+        "Note: overnight trips (lines 6XX, 9XX) belong to the previous service date."
+    ),
+]
+
+LineNumberPath = Annotated[
+    str,
+    Path(
+        description="Line number, e.g. '194', '424', '503'",
+        min_length=1,
+        max_length=5,
+        pattern=r"^[a-zA-Z0-9]{1,5}$",
+    ),
+]
+
+ShapeIdPath = Annotated[
+    str,
+    Path(
+        description="Shape ID from /vehicles/positions endpoint",
+        min_length=1,
+        max_length=50,
+        pattern=r"^[a-zA-Z0-9_-]{1,50}$",
+    ),
+]
 
 
 class MaxDelayBetweenStops(msgspec.Struct):
