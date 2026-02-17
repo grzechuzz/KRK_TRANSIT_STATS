@@ -7,7 +7,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from sqlalchemy import text
+from psycopg import sql
 from sqlalchemy.orm import Session
 
 from app.common.gtfs.timeparse import parse_gtfs_time_to_seconds
@@ -110,10 +110,15 @@ def _delete_agency_data(session: Session, agency_id: str) -> None:
     """Delete all GTFS data for a specific agency."""
     logger.info(f"[{agency_id}] Deleting old data...")
 
-    for table_name in _DELETE_ORDER:
-        session.execute(text(f"DELETE FROM {table_name} WHERE agency_id = :agency_id"), {"agency_id": agency_id})
+    raw_conn = session.connection().connection.dbapi_connection
+    if raw_conn is None:
+        raise RuntimeError("No database connection available")
 
-    session.flush()
+    cursor = raw_conn.cursor()
+    for table_name in _DELETE_ORDER:
+        stmt = sql.SQL("DELETE FROM {} WHERE agency_id = %s").format(sql.Identifier(table_name))
+        cursor.execute(stmt, (agency_id,))
+
     logger.info(f"[{agency_id}] Delete complete")
 
 
@@ -126,7 +131,12 @@ def _copy_to_table(session: Session, table_name: str, columns: list[str], data: 
     cursor = raw_conn.cursor()
     data.seek(0)
 
-    with cursor.copy(f"COPY {table_name} ({','.join(columns)}) FROM STDIN WITH (FORMAT CSV)") as copy:
+    stmt = sql.SQL("COPY {} ({}) FROM STDIN WITH (FORMAT CSV)").format(
+        sql.Identifier(table_name),
+        sql.SQL(", ").join(map(sql.Identifier, columns)),
+    )
+
+    with cursor.copy(stmt) as copy:
         copy.write(data.getvalue())
 
 
