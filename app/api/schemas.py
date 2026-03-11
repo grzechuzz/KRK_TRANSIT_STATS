@@ -39,6 +39,16 @@ ShapeIdPath = Annotated[
     ),
 ]
 
+TripIdPath = Annotated[
+    str,
+    Path(
+        description="Trip ID from /vehicles/positions endpoint",
+        min_length=1,
+        max_length=50,
+        pattern=r"^[a-zA-Z0-9_-]{1,50}$",
+    ),
+]
+
 
 class MaxDelayBetweenStops(msgspec.Struct):
     trip_id: str
@@ -149,3 +159,17 @@ class ShapePoint(msgspec.Struct):
 class ShapeResponse(msgspec.Struct):
     shape_id: str
     points: list[ShapePoint]
+
+
+class TripStop(msgspec.Struct):
+    stop_id: str
+    stop_name: str
+    stop_desc: str | None
+    latitude: float | None
+    longitude: float | None
+    sequence: int
+
+
+class TripStopsResponse(msgspec.Struct):
+    trip_id: str
+    stops: list[TripStop]

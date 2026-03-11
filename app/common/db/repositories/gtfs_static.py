@@ -1,4 +1,4 @@
-from sqlalchemy import func, select
+from sqlalchemy import Row, func, select
 from sqlalchemy.orm import Session, joinedload
 
 from app.common.db.models import CurrentShape, CurrentStop, CurrentStopTime, CurrentTrip
@@ -36,3 +36,12 @@ class GtfsStaticRepository:
     def get_shape_points(self, shape_id: str) -> list[CurrentShape]:
         stmt = select(CurrentShape).where(CurrentShape.shape_id == shape_id).order_by(CurrentShape.shape_pt_sequence)
         return list(self._session.scalars(stmt).all())
+
+    def get_stops_for_trip(self, trip_id: str) -> list[Row[tuple[CurrentStopTime, CurrentStop]]]:
+        stmt = (
+            select(CurrentStopTime, CurrentStop)
+            .join(CurrentStop, CurrentStopTime.stop_id == CurrentStop.stop_id)
+            .where(CurrentStopTime.trip_id == trip_id)
+            .order_by(CurrentStopTime.stop_sequence)
+        )
+        return list(self._session.execute(stmt).all())

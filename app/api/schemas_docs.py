@@ -225,8 +225,8 @@ class LiveVehicleResponse(BaseModel):
                         "line_number": "179",
                         "headsign": "Dworzec Główny Zachód",
                         "shape_id": "shape_1234",
-                        "latitude": 50.06734085083008,
-                        "longitude": 19.944305419921875,
+                        "latitude": 50.0322380065918,
+                        "longitude": 19.94826316833496,
                         "bearing": 90,
                         "timestamp": "2026-02-15T17:07:00+00:00",
                     },
@@ -236,7 +236,7 @@ class LiveVehicleResponse(BaseModel):
                         "line_number": "164",
                         "headsign": "Piaski Nowe",
                         "shape_id": "shape_9024",
-                        "latitude": 50.081119537353516,
+                        "latitude": 50.04066848754883,
                         "longitude": 19.874757766723633,
                         "bearing": 90,
                         "timestamp": "2026-02-15T17:07:02+00:00",
@@ -298,6 +298,54 @@ class ShapeResponse(BaseModel):
                     {"latitude": 50.061433, "longitude": 19.936586, "sequence": 1},
                     {"latitude": 50.061571, "longitude": 19.937014, "sequence": 2},
                     {"latitude": 50.061984, "longitude": 19.938119, "sequence": 3},
+                ],
+            }
+        }
+    )
+
+
+class TripStop(BaseModel):
+    stop_id: str
+    stop_name: str
+    stop_desc: str | None
+    latitude: float | None
+    longitude: float | None
+    sequence: int
+
+
+class TripStopsResponse(BaseModel):
+    trip_id: str
+    stops: list[TripStop]
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "trip_id": "block_675_trip_13_service_2",
+                "stops": [
+                    {
+                        "stop_id": "stop_55_7904",
+                        "stop_name": "Plac Inwalidów",
+                        "stop_desc": "01",
+                        "latitude": 50.075130462646484,
+                        "longitude": 19.906492233276367,
+                        "sequence": 1,
+                    },
+                    {
+                        "stop_id": "stop_1626_311102",
+                        "stop_name": "AGH / UR",
+                        "stop_desc": "02",
+                        "latitude": 50.09483337402344,
+                        "longitude": 19.96756935119629,
+                        "sequence": 2,
+                    },
+                    {
+                        "stop_id": "stop_1654_314104",
+                        "stop_name": "Muzeum Narodowe",
+                        "stop_desc": "01",
+                        "latitude": 50.06626892089844,
+                        "longitude": 19.99996566772461,
+                        "sequence": 3,
+                    },
                 ],
             }
         }
